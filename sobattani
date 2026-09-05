@@ -1,0 +1,96 @@
+# SmartCrop Tracker 🌿
+
+**SmartCrop Tracker** adalah aplikasi mobile lintas platform (Android & iOS) yang dirancang khusus untuk membantu petani memantau umur dan fase pertumbuhan tanaman secara presisi. Dengan dukungan integrasi AI kamera untuk deteksi kanopi dan organ generatif, serta kalibrasi berbasis suhu *Growing Degree Days* (GDD), aplikasi ini memastikan sistem perawatan pertanian menjadi lebih cerdas, tepat waktu, dan berkelanjutan.
+
+---
+
+## 🚀 Fitur Utama
+
+### 1. Halaman Utama (Dashboard)
+* **Daftar Tanaman Aktif:** Memantau semua komoditas yang sedang ditanam dalam satu layar.
+* **Aksi Cepat:** Akses instan ke tombol *Tambah Tanaman Baru* dan *Scan Kamera AI*.
+* **Widget Cuaca Lokal:** Integrasi data cuaca harian otomatis berdasarkan lokasi GPS petani.
+
+### 2. Penelusuran & Kategori Tanaman (Crop Selection)
+Formulir dinamis dengan 3 logika visualisasi lini masa (*timeline*) yang berbeda:
+* **Kelompok Tanaman Semusim:** Pelacakan berbasis Hari Setelah Tanam (HST) dengan progress bar 4 fase:
+  * Persemaian (1-20 HST)
+  * Vegetatif (21-55 HST)
+  * Generatif (56-85 HST)
+  * Pematangan (86-105 HST)
+* **Kelompok Tanaman Perkebunan/Tahunan:** Pelacakan berbasis Siklus Budidaya 12 Bulan (Pemulihan Pasca-Panen, Tunas Baru, Pembungaan, Pemasakan Buah).
+* **Kelompok Tanaman Hias & Sayuran Daun:** Pelacakan siklus pendek (1-35 HST) dilengkapi alarm khusus *Fase Repotting* (6 bulanan) dan *Fase Perbanyakan/Stek*.
+
+### 3. Kamera Deteksi Umur & Integrasi AI
+* **Pemindaian Densitas Kanopi:** Menilai kerapatan daun secara visual.
+* **Deteksi Organ Generatif:** Otomatis mengubah status dari Vegetatif ke Generatif saat mendeteksi kuncup bunga/bakal buah.
+* **Kalibrasi GDD (Growing Degree Days):** Menggabungkan tanggal tanam dengan data suhu harian wilayah dari GPS/API Cuaca untuk mendapatkan umur biologis tanaman yang presisi.
+
+### 4. Sistem Notifikasi Smart-Farming
+* **Panduan Perawatan Dinamis:** Instruksi perawatan yang berubah otomatis mengikuti fase pertumbuhan pada *progress bar*.
+* **Push Notification Pemupukan Kritis:** Mengingatkan waktu pemupukan susulan (misal: Jagung pada 30 HST).
+* **Smart Alert Pestisida Tepat Waktu:** Larangan keras (*warning alert*) penyemprotan pestisida kimia sistemik saat memasuki masa 2 minggu sebelum panen (Fase Pematangan) demi keamanan pangan.
+
+---
+
+## 🛠️ Spesifikasi Teknologi (Tech Stack)
+
+Aplikasi ini dikembangkan menggunakan **Flutter** agar dapat berjalan di Android dan iOS dengan satu basis kode (*single codebase*), menggunakan manajemen status **Bloc / Riverpod**.
+
+* **Frontend Framework:** Flutter (Dart) / React Native (TypeScript)
+* **AI/Computer Vision:** TensorFlow Lite (On-Device Mobile)
+* **Backend & Database:** Firebase (Firestore, Cloud Functions, Auth, Push Notifications)
+* **Weather API:** OpenWeatherMap API (untuk data suhu harian & kalkulasi GDD)
+
+---
+
+## 📂 Struktur Repositori
+
+```text
+smartcrop-tracker/
+├── .github/workflows/       # Automated CI/CD (Build APK & Test)
+├── android/                 # Konfigurasi spesifik Android
+├── ios/                     # Konfigurasi spesifik iOS
+├── lib/                     # Kode utama aplikasi (Flutter)
+│   ├── core/                # Utility, Network, Theme, & API GDD
+│   ├── features/            # Modul Fitur Berbasis Clean Architecture
+│   │   ├── dashboard/       # Dashboard & Widget Cuaca
+│   │   ├── crop_selection/  # Form & Logika Lini Masa (3 Kategori)
+│   │   ├── ai_camera/       # Deteksi Kamera AI & Kalibrasi GDD
+│   │   └── notification/    # Panduan Dinamis & Smart Alert Pestisida
+│   └── main.dart            # Entry point aplikasi
+├── pubspec.yaml             # Dependensi project
+└── README.md                # Dokumentasi utama
+```
+
+---
+
+## 🎨 Panduan Antarmuka (UI/UX)
+* **Warna Dominan:** Hijau Alam (`#2E7D32`), Putih Bersih (`#FFFFFF`), Hijau Muda Aksentasi (`#A5D6A7`).
+* **Navigasi:** Menggunakan *Bottom Navigation Bar* yang simpel dan ramah untuk petani di lapangan.
+
+---
+
+## ⚙️ Cara Menjalankan Project
+
+1. **Clone repositori ini:**
+   ```bash
+   git clone https://github.com/username/smartcrop-tracker.git
+   cd smartcrop-tracker
+   ```
+2. **Install dependensi:**
+   ```bash
+   flutter pub get
+   ```
+3. **Masukkan API Key:**
+   Buat file `.env` di direktori akar dan tambahkan API Key Cuaca Anda:
+   ```env
+   WEATHER_API_KEY=your_openweathermap_api_key_here
+   ```
+4. **Jalankan Aplikasi:**
+   ```bash
+   flutter run
+   ```
+
+---
+📧 **Kontribusi & Dukungan:** Hubungi tim pengembang melalui tab *Issues* di GitHub ini jika Anda menemukan bug atau memiliki saran fitur tambahan.
