@@ -1,0 +1,152 @@
+/**
+ * TabaccoCare - Core Application Logic
+ * Aplikasi Pendeteksi & Manajemen Tembakau berbasis AI
+ */
+
+// ==========================================
+// 1. DATA MASTER & DATABASE SIMULATION
+// ==========================================
+const PESTISIDA_DATABASE = {
+  "Virus Mosaik": {
+    kimia: { nama: "Imidakloprid", dosisPerLiter: 1.5 },
+    organik: { nama: "Ekstrak Daun Mimba & Urin Sapi", dosisPerLiter: 50 }
+  },
+  "Ulat Tanduk": {
+    kimia: { nama: "Deltametrin (Decis)", dosisPerLiter: 2.0 },
+    organik: { nama: "Semprotan Air Rebusan Cabai & Bawang", dosisPerLiter: 30 }
+  },
+  "Dipterous (Lalat Penggorok)": {
+    kimia: { nama: "Siantraniliprol", dosisPerLiter: 1.0 },
+    organik: { nama: "Pestisida Nabati Daun Kenikir", dosisPerLiter: 40 }
+  }
+};
+
+// ==========================================
+// 2. CLASSES / MODULES
+// ==========================================
+
+class Petani {
+  constructor(nama, luasLahanM2, tanggalTanam) {
+    this.nama = nama;
+    this.luasLahanM2 = luasLahanM2; // dalam meter persegi
+    this.tanggalTanam = new Date(tanggalTanam);
+    this.kalenderPerawatan = [];
+  }
+
+  // Fitur 1: Mengestimasi Umur & Fase Tanaman
+  hitungUmurDanFase() {
+    const hariIni = new Date();
+    const selisihWaktu = hariIni.getTime() - this.tanggalTanam.getTime();
+    const selisihHari = Math.floor(selisihWaktu / (1000 * 3600 * 24));
+
+    let fase = "Pembibitan";
+    if (selisihHari > 20 && selisihHari <= 60) fase = "Vegetatif";
+    if (selisihHari > 60 && selisihHari <= 90) fase = "Generatif / Siap Topping";
+    if (selisihHari > 90) fase = "Siap Panen";
+
+    return { umurHari: selisihHari, fase: fase };
+  }
+}
+
+class AIKameraScanner {
+  // Simulasi Pemindaian Kamera AI
+  static scanDaun(kondisiWarna, adaBercak, polaHama) {
+    console.log("📸 Menganalisis tekstur dan pola warna daun...");
+    
+    if (!adaBercak && kondisiWarna === "Hijau Segar") {
+      return { status: "Sehat", penyakit: null };
+    }
+    
+    // Logika pencocokan hama/penyakit sederhana
+    let terdeteksi = "Penyakit Tidak Dikenal";
+    if (polaHama === "ulat" || polaHama === "daun berlubang") terdeteksi = "Ulat Tanduk";
+    else if (adaBercak && kondisiWarna === "Kuning Mosaik") terdeteksi = "Virus Mosaik";
+    else if (polaHama === "garis putih") terdeteksi = "Dipterous (Lalat Penggorok)";
+
+    return { status: "Sakit", penyakit: terdeteksi };
+  }
+}
+
+class PerawatanManager {
+  // Fitur 2: Kalkulator Dosis & Rekomendasi Pestisida
+  static berikanRekomendasiPestisida(penyakit, luasLahanM2) {
+    const dataObat = PESTISIDA_DATABASE[penyakit];
+    
+    if (!dataObat) {
+      return "Penyakit tidak terdaftar. Silakan hubungi penyuluh pertanian di fitur Komunitas.";
+    }
+
+    // Asumsi standar: 100 m2 lahan butuh sekitar 5 Liter air spray
+    const kebutuhanAirLiter = (luasLahanM2 / 100) * 5; 
+    
+    const totalDosisKimia = dataObat.kimia.dosisPerLiter * kebutuhanAirLiter;
+    const totalDosisOrganik = dataObat.organik.dosisPerLiter * kebutuhanAirLiter;
+
+    return {
+      penyakit: penyakit,
+      kebutuhanAirTotal: kebutuhanAirLiter.toFixed(1) + " Liter",
+      opsiKimia: {
+        bahanAktifMerek: dataObat.kimia.nama,
+        dosisSaran: `${dataObat.kimia.dosisPerLiter} ml/Liter air`,
+        totalKebutuhanLahan: totalDosisKimia.toFixed(1) + " ml"
+      },
+      opsiOrganik: {
+        ramuanAlami: dataObat.organik.nama,
+        dosisSaran: `${dataObat.organik.dosisPerLiter} ml/Liter air`,
+        totalKebutuhanLahan: totalDosisOrganik.toFixed(1) + " ml/gram"
+      }
+    };
+  }
+
+  // Fitur 3: Generate Jadwal Otomatis
+  static buatJadwalOtomatis(petani) {
+    const jadwal = [
+      { hariKe: 15, aktivitas: "Pemupukan Pertama (ZA/NPK khusus tembakau)" },
+      { hariKe: 30, aktivitas: "Penyiangan Gulma & Pembumbunan Tanah" },
+      { hariKe: 45, aktivitas: "Pemupukan Kedua & Cek Potensi Hama Ulat" },
+      { hariKe: 65, aktivitas: "Topping (Pemangkasan Pucuk Bunga)" },
+      { hariKe: 90, aktivitas: "Estimasi Panen Daun Bawah" }
+    ];
+
+    petani.kalenderPerawatan = jadwal.map(item => {
+      const tanggalAksi = new Date(petani.tanggalTanam);
+      tanggalAksi.setDate(tanggalAksi.getDate() + item.hariKe);
+      return {
+        tanggal: tanggalAksi.toDateString(),
+        aktivitas: item.aktivitas
+      };
+    });
+
+    return petani.kalenderPerawatan;
+  }
+}
+
+// ==========================================
+// 3. SIMULASI JALANNYA APLIKASI (USER JOURNEY)
+// ==========================================
+
+// Langkah 1: Registrasi Petani & Setup Lahan
+console.log("=== USER JOURNEY: REGISTER ===");
+const petani1 = new Petani("Pak Joko", 500, "2026-07-20"); // Lahan 500m2, tanam 20 Juli 2026
+console.log(`Petani terdaftar: ${petani1.nama}, Luas Lahan: ${petani1.luasLahanM2} m2`);
+
+// Langkah 2 & 3: Cek Umur dan Jalankan Scan Kamera AI
+console.log("\n=== USER JOURNEY: SCANNING DAUN ===");
+const statusTanaman = petani1.hitungUmurDanFase();
+console.log(`Info Status: Tembakau Anda Umur ${statusTanaman.umurHari} Hari (Fase ${statusTanaman.fase})`);
+
+// Simulasi kamera mendeteksi daun berlubang karena ulat
+const hasilScan = AIKameraScanner.scanDaun("Hijau Kecoklatan", true, "ulat");
+console.log(`Hasil Scan AI -> Status: ${hasilScan.status} | Terdeteksi: ${hasilScan.penyakit}`);
+
+// Langkah 4: Dapatkan Rekomendasi Obat & Dosis Otomatis jika Sakit
+if (hasilScan.status === "Sakit") {
+  console.log("\n=== SYSTEM: REKOMENDASI PESTISIDA & DOSIS ===");
+  const rekomendasi = PerawatanManager.berikanRekomendasiPestisida(hasilScan.penyakit, petani1.luasLahanM2);
+  console.log(JSON.stringify(rekomendasi, null, 2));
+}
+
+// Langkah 5: Lihat Kalender Perawatan Otomatis
+console.log("\n=== USER JOURNEY: KALENDER PERAWATAN OTOMATIS ===");
+const jadwalPetani = PerawatanManager.buatJadwalOtomatis(petani1);
+console.log(jadwalPetani);
